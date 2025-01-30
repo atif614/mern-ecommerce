@@ -62,8 +62,8 @@ const productSchema = new mongoose.Schema({
         }
     ],
     createdAt: {
-        type:Date,
-        default: Date.now
+        type:String,
+        default: () => new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
     }
 })
 
