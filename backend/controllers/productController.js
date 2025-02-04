@@ -14,10 +14,15 @@ export const createProduct = handleAsyncError( async (req, res) => {
 })
 
 export const getAllProducts = async (req, res) => {
-    const APIFeatures =  new APIFunctionality(Product.find(),req.query).search();
+    const resultsPerPage = 3;
+    const APIFeatures =  new APIFunctionality(Product.find(),req.query).search().filter();
+    const filteredQuery = APIFeatures.query.clone();
+    const productCount = await filteredQuery.countDocuments();
+
     // const products = await Product.find();
     const products = await APIFeatures.query;
-    res.status(200).json({ success: true, products })
+    const totalPages = Math.ceil(productCount/resultsPerPage);
+    res.status(200).json({ success: true, products, productCount,totalPages })
 }
 
 export const UpdateProduct = async (req, res,next) => {
