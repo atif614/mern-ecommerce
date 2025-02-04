@@ -6,6 +6,13 @@ ConnectToDB();
 // app.get("/products",getAllProducts);
 // app.get("/product",SingleProduct);
 
-app.listen(process.env.PORT,()=>{
+const server = app.listen(process.env.PORT,()=>{
     console.log(`server is running PORT = ${process.env.PORT}`);
+})
+process.on('unhandledRejection',(error)=>{
+    console.log(`Error: ${error.message}`);
+    console.log(`server is shutting down, due to unhandled promise rejections`);
+    server.close(function(){
+        process.exit(1);
+    })
 })

@@ -1,18 +1,22 @@
+import handleAsyncError from "../middleware/handleAsyncError.js";
 import productModel from "../models/productModel.js";
 import Product from "../models/productModel.js";
+import APIFunctionality from "../utils/apiFunctionality.js";
 import HandleError from "../utils/handleError.js";
 
-export const createProduct = async (req, res) => {
+export const createProduct = handleAsyncError( async (req, res) => {
     console.log("First")
     const product = await Product.create(req.body);
     // console.log(req.body);
     console.log("second line");
     console.log(product)
     res.status(201).json({ success: true, product });
-}
+})
 
 export const getAllProducts = async (req, res) => {
-    const products = await Product.find();
+    const APIFeatures =  new APIFunctionality(Product.find(),req.query).search();
+    // const products = await Product.find();
+    const products = await APIFeatures.query;
     res.status(200).json({ success: true, products })
 }
 
