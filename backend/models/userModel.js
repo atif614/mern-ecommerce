@@ -1,5 +1,9 @@
 import mongoose, { mongo } from "mongoose";
 import validator from 'validator';
+import bcryptjs from "bcryptjs";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken"
+dotenv.config({path:"../config/config.env"});
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -30,16 +34,32 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     },
-    role:{
-        type:String,
-        defaut:'user'
+    role: {
+        type: String,
+        defaut: 'user'
     },
-    createdAt:{
-        type:Date,
-        default:Date.now
+    createdAt: {
+        type: Date,
+        default: Date.now
     },
-    resetPasswordToken:String,
-    resetPasswordExpire:Date
+    resetPasswordToken: String,
+    resetPasswordExpire: Date
 })
 
-export default mongoose.model('User',userSchema)
+// Password Hashing
+userSchema.pre("save", async function (next) {
+    console.log(this.password)
+    this.password = await bcryptjs.hash(this.password, 10);
+    if (!this.isModified("password")) {
+        return next();
+    }
+})
+
+// JWT Token
+userSchema.methods.getJWTToken = function () {
+    return jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, {
+        expiresIn: '3d'
+    });
+}
+ 
+export default mongoose.model('User', userSchema)
