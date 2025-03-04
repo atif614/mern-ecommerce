@@ -18,8 +18,8 @@ export const registerUser = handleAsyncError(async (req, res, next) => {
             url: "Temp URL"
         }
     })
-    const token = user.getJWTToken();
-    console.log("token", token)
+    // const token = user.getJWTToken();
+    // console.log("token", token)
     //  res.status(200).json({
     //     success:true,
     //     user,
@@ -65,4 +65,27 @@ export const logout = handleAsyncError(async(req,res,next)=>{
         success:true,
         message:"Successfully Logout"
     })
+})
+
+// Forgot Password Reset Link
+export const requestPasswordReset = handleAsyncError(async(req,res,next)=>{
+    const {email} = req.body;
+    const user = await User.findOne({email});
+    console.log("userbhia",user.generatePasswordResetToken());
+    console.log("USerrrr",user);
+    if(!email){
+        return next(new HandleError('Email Field cannot be blank',400));
+    }
+    if(!user){
+        return next(new HandleError("User doesn't exist",404)); 
+    }
+    let resetToken;
+    try{
+        resetToken = user.generatePasswordResetToken();
+        await user.save({validateBeforeSave:false})
+        console.log("resetToken",resetToken);
+    }catch(error){
+        console.log("Error",error);
+        return next(new HandleError('Could not save reset token, please try again later',400));
+    }
 })
