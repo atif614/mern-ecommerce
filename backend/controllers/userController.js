@@ -3,6 +3,7 @@ import User from "../models/userModel.js";
 import { sendToken } from "../utils/jwtToken.js";
 import HandleError from "../utils/handleError.js";
 import bcrypt from "bcryptjs";
+import { sendEmail } from "../utils/sendEmail.js";
 
 
 export const registerUser = handleAsyncError(async (req, res, next) => {
@@ -87,5 +88,20 @@ export const requestPasswordReset = handleAsyncError(async(req,res,next)=>{
     }catch(error){
         console.log("Error",error);
         return next(new HandleError('Could not save reset token, please try again later',400));
+    }
+    const resetPasswordURL = `http://localhost:8000/${resetToken}`;
+    const message = `Use the following link to reset your password: ${resetPasswordURL} . \n\n This link will expire in 30 minutes. \n\n If you did not requested a password reset, please ignore this mail`;
+    try {
+        // send email functionality
+        await sendEmail({
+            email:user.email,
+            subject: 'Password reset request',
+            message
+        })
+    } catch (error) {
+        user.resetPasswordToken=undefined;
+        user.resetPasswordExpire=undefined;
+        await user.save({validateBeforeSave:false});
+        return next (new HandleError('Email cCould not be sent. Please try again later',500))
     }
 })
