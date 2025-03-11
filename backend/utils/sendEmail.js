@@ -8,7 +8,7 @@ export const sendEmail = async (options) => {
         service: process.env.SMTP_SERVICE,
         auth: {
             user: process.env.SMTP_USER,
-            pass: "jn7jnAPss4f63QBp6D",
+            pass: process.env.SMTP_PASSWORD
         },
     });
     const mailOptions = {
@@ -18,4 +18,5 @@ export const sendEmail = async (options) => {
         text: options.message
         // html: "<b>Hello world?</b>", // html body
     }
+    await transporter.sendMail(mailOptions)
 }

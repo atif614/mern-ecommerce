@@ -71,9 +71,10 @@ export const logout = handleAsyncError(async(req,res,next)=>{
 // Forgot Password Reset Link
 export const requestPasswordReset = handleAsyncError(async(req,res,next)=>{
     const {email} = req.body;
+    console.log("Email ------------->",email);
     const user = await User.findOne({email});
-    console.log("userbhia",user.generatePasswordResetToken());
     console.log("USerrrr",user);
+   // console.log("userbhia",user.generatePasswordResetToken());
     if(!email){
         return next(new HandleError('Email Field cannot be blank',400));
     }
@@ -87,21 +88,36 @@ export const requestPasswordReset = handleAsyncError(async(req,res,next)=>{
         console.log("resetToken",resetToken);
     }catch(error){
         console.log("Error",error);
-        return next(new HandleError('Could not save reset token, please try again later',400));
+        return next(new HandleError(`Could not save reset token, please try again later${error}`,400));
     }
     const resetPasswordURL = `http://localhost:8000/${resetToken}`;
     const message = `Use the following link to reset your password: ${resetPasswordURL} . \n\n This link will expire in 30 minutes. \n\n If you did not requested a password reset, please ignore this mail`;
     try {
         // send email functionality
+        console.log("send email functionality")
         await sendEmail({
             email:user.email,
             subject: 'Password reset request',
             message
         })
+        res.status({
+            success:true,
+            message: `Email sent to ${user.email} successfully`
+        })
     } catch (error) {
+        console.log(error)
         user.resetPasswordToken=undefined;
         user.resetPasswordExpire=undefined;
         await user.save({validateBeforeSave:false});
-        return next (new HandleError('Email cCould not be sent. Please try again later',500))
+        return next (new HandleError(`Email Could not be sent. Please try again later ${error}`,500))
     }
+})
+
+// Getting user details
+export const getUserDetails = handleAsyncError(async(req,res)=>{
+    const user = await User.findById(req.user.id);
+    res.status(200).json({
+        success:true,
+        user
+    })
 })
